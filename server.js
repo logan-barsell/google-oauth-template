@@ -49,21 +49,24 @@ const app = express();
 
 app.use(helmet());
 
-app.use(cookieSession({
-  name: 'session',
-  maxAge: 24 * 60 * 60 * 1000,
-  keys: [config.COOKIE_KEY_1, config.COOKIE_KEY_2],
-}));
+app.use(
+  cookieSession({
+    name: 'session',
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [config.COOKIE_KEY_1, config.COOKIE_KEY_2],
+  })
+);
+
 app.use((req, res, next) => {
   // Stub out missing regenerate and save functions.
   // These don't make sense for client side sessions.
   if (req.session && !req.session.regenerate) {
-    req.session.regenerate = (cb) => {
+    req.session.regenerate = cb => {
       cb();
     };
   }
   if (req.session && !req.session.save) {
-    req.session.save = (cb) => {
+    req.session.save = cb => {
       cb();
     };
   }
@@ -84,12 +87,15 @@ function checkLoggedIn(req, res, next) {
   next();
 }
 
-app.get('/auth/google',
+app.get(
+  '/auth/google',
   passport.authenticate('google', {
     scope: ['email'],
-  }));
+  })
+);
 
-app.get('/auth/google/callback',
+app.get(
+  '/auth/google/callback',
   passport.authenticate('google', {
     failureRedirect: '/failure',
     successRedirect: '/',
@@ -102,7 +108,7 @@ app.get('/auth/google/callback',
 
 app.get('/auth/logout', (req, res, next) => {
   //Removes req.user and clears any logged in session
-  req.logout((err) => {
+  req.logout(err => {
     if (err) {
       return next(err);
     }
@@ -122,9 +128,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-https.createServer({
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem'),
-}, app).listen(PORT, () => {
-  console.log(`Listening on port ${PORT}...`);
-});
+https
+  .createServer(
+    {
+      key: fs.readFileSync('key.pem'),
+      cert: fs.readFileSync('cert.pem'),
+    },
+    app
+  )
+  .listen(PORT, () => {
+    console.log(`Listening on port ${PORT}...`);
+  });
